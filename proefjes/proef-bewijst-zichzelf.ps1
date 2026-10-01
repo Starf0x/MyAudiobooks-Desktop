@@ -19,11 +19,38 @@
 $ErrorActionPreference = 'Stop'
 
 $map = Split-Path $PSScriptRoot -Parent
-$dn = 'C:\Users\FrankBastiaens\AppData\Local\Temp\opencode\dotnet\dotnet.exe'
 $werk = Join-Path $env:TEMP 'proef-bewijst-zichzelf'
 
-if (-not (Test-Path $dn)) {
-  "ONGELDIG: dotnet staat niet op $dn"
+<#
+  Waar de `dotnet.exe` staat die dit script gebruikt.
+
+  Hier stond een vast pad in de thuismap van één machine. Dat is hetzelfde
+  probleem als de twee paden die eerder in de proefjes stonden en die zijn
+  verwijderd: het script werkt dan alleen nog op de computer van degene die het
+  geschreven heeft, en op elke andere computer zegt het "ONGELDIG: dotnet staat
+  niet op …" — wat waar is, en niet zegt wat er dan wél moet gebeuren.
+
+  Dus: eerst de gewone `dotnet` van PATH, want daar staat op elke machine met de
+  SDK de goede versie in. Pas als die er niet is, kijkt het script of er een
+  SDK-installatie in de map van deze gebruiker staat, want die legt Microsoft daar
+  neer en daar staat de padcode niet in. En als het er dan nog niet is, zegt het
+  dat met de handeling erbij.
+#>
+function VindDotnet {
+  $opPad = Get-Command dotnet -ErrorAction SilentlyContinue
+  if ($opPad) { return $opPath.Source }
+  $inMap = Get-ChildItem -Path (Join-Path $env:LOCALAPPDATA 'Microsoft\dotnet\dotnet.exe') -ErrorAction SilentlyContinue
+  if ($inMap) { return $inMap.FullName }
+  $programFiles = Join-Path ${env:ProgramFiles} 'dotnet\dotnet.exe'
+  if (Test-Path $programFiles) { return $programFiles }
+  return $null
+}
+$dn = VindDotnet
+if (-not $dn) {
+  "ONGELDIG: dotnet.exe is niet gevonden."
+  "  Installeer de .NET 10 SDK, of zet het pad ernaartoe in PATH. Zonder de SDK"
+  "  kan dit script de app niet bouwen, en het proefje dat het wil controleren"
+  "  niet draaien."
   exit 1
 }
 

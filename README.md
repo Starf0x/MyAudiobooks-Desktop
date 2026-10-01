@@ -53,6 +53,23 @@ It verifies that every brush, style and font the code asks for by name actually
 exists in `App.xaml`. A resource that is missing does not fail the build — it
 fails at runtime, in one spot, on one screen.
 
+## Releases
+
+The version lives in `MyAudiobooks.csproj` and ends up in the binary, so it can
+be read back off the file rather than taken on trust:
+
+```powershell
+(Get-Item .\uit\MyAudiobooks.exe).VersionInfo.ProductVersion
+```
+
+Bump `Version`, `AssemblyVersion` and `FileVersion` together, then tag with the
+same number. The release notes quote the SHA-256 of the exe, because "it just
+crashed" is worth very little next to a hash someone can check.
+
+`gh release create` takes the exe as an asset, so the artefact in the release is
+the artefact that was built from that tag — not one someone remembered to
+rebuild afterwards.
+
 ## Tests
 
 There is no unit-test project, and that is a decision, not an oversight: there is

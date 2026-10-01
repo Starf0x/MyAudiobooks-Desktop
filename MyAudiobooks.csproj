@@ -9,6 +9,17 @@
     <AssemblyName>MyAudiobooks</AssemblyName>
     <RootNamespace>MyAudiobooks</RootNamespace>
     <ApplicationIcon>assets\icon.ico</ApplicationIcon>
+    <!-- De versie staat in het binaire bestand, en niet alleen in de naam van de
+         release. Zonder deze regel heeft de exe geen versie, en dan is "ik draai
+         1.0.0" een iemand anders' aanname: de eigenschappen van het bestand
+         zeggen niets, en een melding van een fout is dan niet na te gaan. Dit
+         komt terug in de bestandseigenschappen van de exe.
+         Bump hem met elke release, en zet dezelfde waarde als de tag. -->
+    <Version>1.0.0</Version>
+    <AssemblyVersion>1.0.0.0</AssemblyVersion>
+    <FileVersion>1.0.0.0</FileVersion>
+    <Product>My Audiobooks</Product>
+    <Company>My Audiobooks</Company>
   </PropertyGroup>
 
   <!-- Eén bestand, één proces.
