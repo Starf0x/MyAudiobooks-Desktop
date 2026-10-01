@@ -74,7 +74,35 @@ $fx = Start-Process -FilePath 'node' -ArgumentList $Server -PassThru -WindowStyl
 
 Start-Sleep -Seconds 2
 $luistert = (Test-NetConnection -ComputerName 127.0.0.1 -Port $Poort -WarningAction SilentlyContinue).TcpTestSucceeded
-if (-not $luistert) { throw "de proefserver luistert niet op poort $Poort" }
+if (-not $luistert) {
+  # Waarom zeggen, en niet alleen dát hij niet luistert.
+  #
+  # Dit is niet hypothetisch. De proefserver stond een keer in de Electron-map,
+  # en toen die er niet meer was, zeiden de proefjes "geen server, dus dit
+  # proefje meet niets" en gingen door: elf regels groen, en geen van die regels
+  # over de app. En de allereerste keer dat hier de fixture naast het project
+  # kwam te staan, miste `node_modules` — `express` was nergens te vinden, node
+  # stopte meteen, en de enige melding was "luistert niet op poort 8532". Dat is
+  # waar, en het zegt niets: er zijn minstens drie redenen waarom dat zo is, en
+  # ze vragen alle drie om een andere handeling.
+  $uitleg = @(
+    "  de proefserver draait niet op poort $Poort. Zijn proces is:"
+    "    pid $($fx.Id), draait nog: $(-not $fx.HasExited)"
+  )
+  if ($fx.HasExited) {
+    $uitleg += '  hij is al gestopt. De meest waarschijnlijke reden is dat de'
+    $uitleg += '  afhankelijkheden ontbreken. Draai dit in de map van het project:'
+    $uitleg += '      npm install'
+    $uitleg += "  (en kijk of 'node' zelf bestaat: $(if (Get-Command node -ErrorAction SilentlyContinue) { 'ja' } else { 'nee' }))"
+  } else {
+    $uitleg += "  hij draait nog maar luistert niet. Kijk of poort $Poort al door"
+    $uitleg += '  iets anders bezet is, of zet -Server op een andere -Poort.'
+  }
+  $uitleg += "  node draait met deze werkmap: $(Split-Path $PSScriptRoot -Parent)"
+  $uitleg += "  en kijkt daarom naar $(Join-Path (Split-Path $PSScriptRoot -Parent) 'node_modules')"
+  $uitleg | ForEach-Object { Write-Host $_ }
+  throw "proefserver draait niet op poort $Poort"
+}
 
 "proefserver draait (pid $($fx.Id)) op http://127.0.0.1:$Poort"
 "  wachtwoord: probe   gebruikersnaam: maakt niet uit"
