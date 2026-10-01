@@ -1,0 +1,62 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <OutputType>WinExe</OutputType>
+    <TargetFramework>net10.0-windows</TargetFramework>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <UseWPF>true</UseWPF>
+    <AssemblyName>MyAudiobooks</AssemblyName>
+    <RootNamespace>MyAudiobooks</RootNamespace>
+    <ApplicationIcon>assets\icon.ico</ApplicationIcon>
+  </PropertyGroup>
+
+  <!-- Eén bestand, één proces.
+       Dit is de hele reden dat dit project bestaat: Electron trok vier
+       Windows-processen, en daar komt je alleen vandaan door Chromium weg te
+       laten. Daarom is er geen webview, geen browser-engine en geen tweede
+       programma dat dit opstart — het venster, de HTTP-verbinding en de mp3
+      _decoder zitten alle drie in dit ene programma.
+         SelfContained + PublishSingleFile: de .NET-runtime zit in de exe, dus
+         er is geen installatie en geen dotnet.exe nodig op de machine.
+         IncludeNativeLibrariesForSelfExtract: inheemse bibliotheeken gaan ook
+         in het bestand, anders zou er alsnog een mapje ernaast staan.
+         InvariantGlobalization uit: de app toont getallen en tijden in de taal
+         van het besturingssysteem, en dat is precies wat invariant uitzet. -->
+  <PropertyGroup>
+    <RuntimeIdentifier>win-x64</RuntimeIdentifier>
+    <SelfContained>true</SelfContained>
+    <PublishSingleFile>true</PublishSingleFile>
+    <IncludeNativeLibrariesForSelfExtract>true</IncludeNativeLibrariesForSelfExtract>
+    <EnableCompressionInSingleFile>true</EnableCompressionInSingleFile>
+    <DebugType>embedded</DebugType>
+    <!-- De runtime-identifier staat er ook voor het gewone builden, zodat de
+         map bin\Debug meteen hetzelfde is als wat er uit komt. -->
+    <SatelliteResourceLanguages>en</SatelliteResourceLanguages>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <!-- De stille usings van een WPF-project laten `System.IO` en `System.Net.Http`
+         weg, terwijl een app die boeken streamt juist daar leeft. Ze er hier bij
+         zetten, zodat geen enkel bestand die naam hoeft te herhalen. -->
+    <Using Include="System.IO" />
+    <Using Include="System.Net.Http" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <!-- Alleen mp3. Eén decoder, en dus één plek waar een decoder iets kan
+         misdoen. Zie ONDERZOEK-AUDIO.md voor de metingen die hieraan de grens
+         gaven: mp3 streamt, m4a/wma/opus kunnen dat in .NET niet, en de server
+         levert daarom mp3.
+         NAudio.WinMM levert de WaveOut-uitvoer. NAudio.Wasapi en NAudio.Vorbis
+         lagen er toen nog en zijn weg: er is geen tweede decoder en geen tweede
+         uitvoer. -->
+    <PackageReference Include="NAudio" Version="3.1.0" />
+    <PackageReference Include="NAudio.WinMM" Version="3.1.0" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Resource Include="assets\icon.ico" />
+  </ItemGroup>
+
+</Project>

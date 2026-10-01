@@ -1,0 +1,17 @@
+# Regeleindes. Alle bestanden in deze repo zijn LF, en dat is een bewuste keuze
+# in plaats van een toevallige: de proefjes bevatten `—` en `’`, en de
+# byte-volgorde daarvan is het verschil tussen een em-dash en een sluitend
+# aanhalingsteken zodra Windows PowerShell een bestand zonder BOM in cp1252 leest
+# (zie proefjes\bom.ps1).
+#
+# Zonder deze regel zet Git op Windows CRLF bij het uitchecken, en dan is
+# ieder bestand een gewijzigd bestand. Dat is geen cosmetiek: het maakt
+# `git status` onbruikbaar en dus elke echte wijziging onvindbaar.
+* text=auto eol=lf
+
+# Binaire bestanden: Git mag hier niets mee doen. Zonder dit zou Git deze bytes
+# naar LF proberen te vertalen en het bestand onbruikbaar maken.
+*.png binary
+*.ico binary
+*.exe binary
+*.woff2 binary

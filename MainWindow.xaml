@@ -1,0 +1,341 @@
+<Window x:Class="MyAudiobooks.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        Title="Mijn Audioboeken"
+        Height="860" Width="1360"
+        MinHeight="560" MinWidth="820"
+        WindowStartupLocation="CenterScreen"
+        UseLayoutRounding="True"
+        TextOptions.TextFormattingMode="Ideal"
+        Loaded="OnLoaded" Closing="OnClosing">
+    <!-- De achtergrond, met de twee gloedjes van de site erin: paars linksboven
+         en cyaan rechtsonder, allebei wegvallend naar niets. Zonder die twee is
+         een leeg paneel een vlak, en met een vlak lijkt een app af.
+
+         Het zijn twee vlakken met een straalverloop erop, over de hele pagina
+         heen, en dus vÃƒÂ³ÃƒÂ³r de rijen met de kopbalk, de pagina, de tellingen en de
+         speler. Niet over het hele venster: het licht valt op de pagina, niet op
+         de randen ervan. -->
+    <Grid>
+        <Grid.Background>
+            <SolidColorBrush Color="{StaticResource BgColor}" />
+        </Grid.Background>
+
+        <!-- De twee gloedjes staan over het hele venster, en dus achter de
+             kopbalk, de pagina, de tellingen en de speler. Alleen het stuk van
+             de pagina is zichtbaar, want die balken zijn ondoorzichtig. Dat is
+             precies zoals op de site: het licht valt op de pagina, niet op het
+             raam eromheen. -->
+
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="*" />
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="Auto" />
+        </Grid.RowDefinitions>
+
+        <!-- De twee gloedjes. `Day` schildert ze bij het opstarten en om
+             middernacht, in de kleur van de dag; de kleuren hieronder zijn die
+             van dag nul, en staan er voor het geval dat het schilderen niet lukt.
+             Zonder de twee is een leeg paneel een vlak.
+
+             `RowSpan="4"` is niet cosmetiek. Zonder hem vallen ze in rij nul, en
+             dat is de rij van de kopbalk: ze zijn dan 48 pixels hoog en liggen
+             verscholen achter het balkje, en de pagina is een vlak. Dat is een
+             fout die eruit ziet als een fout in de kleuren, want `Day` schildert
+             gewoon wat het gevraagd krijgt. -->
+        <Rectangle x:Name="Glow1" Grid.RowSpan="4" IsHitTestVisible="False">
+            <Rectangle.Fill>
+                <LinearGradientBrush StartPoint="0,0.06" EndPoint="1,0.78">
+                    <GradientStop Color="#5470ff2e" Offset="0" />
+                    <GradientStop Color="#5470ff00" Offset="0.45" />
+                </LinearGradientBrush>
+            </Rectangle.Fill>
+        </Rectangle>
+
+        <Rectangle x:Name="Glow2" Grid.RowSpan="4" IsHitTestVisible="False">
+            <Rectangle.Fill>
+                <LinearGradientBrush StartPoint="0.86,0.72" EndPoint="0.45,0.34">
+                    <GradientStop Color="#26c8d840" Offset="0" />
+                    <GradientStop Color="#26c8d800" Offset="0.5" />
+                </LinearGradientBrush>
+            </Rectangle.Fill>
+        </Rectangle>
+
+        <!-- De balk bovenaan. Links het handvat terug naar de planken, in het
+             midden het zoekveld, rechts wie er is afgemeld en de knop om dat te
+             doen. De hoogte staat vast, want hij is er altijd en hij zou de
+             planken anders mee omhoog en omlaag duwen.
+
+             De balk loopt van donker naar bijna zwart. Zo staat hij op de site,
+             en dat haalt hem los van de pagina eronder: zonder die overgang
+             zijn de balk en de pagina ÃƒÂ©ÃƒÂ©n vlak. -->
+        <Border Grid.Row="0" Background="{StaticResource Bar}" BorderBrush="{StaticResource Line}"
+                BorderThickness="0,0,0,1">
+            <Grid Margin="16,0,16,0" Height="48">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="Auto" />
+                    <ColumnDefinition Width="*" />
+                    <ColumnDefinition Width="Auto" />
+                </Grid.ColumnDefinitions>
+
+                <Button x:Name="Brand" Style="{StaticResource Plain}" Padding="6,4" Click="OnBrand">
+                    <StackPanel Orientation="Horizontal">
+                        <TextBlock Text="&#x1F3A7;" FontSize="15" VerticalAlignment="Center" />
+                        <TextBlock x:Name="BrandName" Style="{StaticResource Text}" FontSize="16"
+                                   FontWeight="SemiBold" VerticalAlignment="Center" Margin="8,0,0,0" />
+                    </StackPanel>
+                </Button>
+
+                <Grid Grid.Column="1" Margin="16,0" MaxWidth="520" HorizontalAlignment="Left">
+                    <TextBlock x:Name="SearchHint" Style="{StaticResource Faint}" Margin="11,0,0,0"
+                               VerticalAlignment="Center" IsHitTestVisible="False" />
+                    <!-- `TextChanged` is hier niet een extraatje maar de enige manier
+                         om te zoeken: `OnSearchText` wacht er zelf even op, zodat
+                         elk getipt woord geen apart verzoek wordt. Zonder de
+                         knoop werkte zoeken helemaal niet, en dat merkte je pas
+                         omdat er niets gebeurde. -->
+                    <TextBox x:Name="Search" Style="{StaticResource Field}" Padding="10,6"
+                             TextChanged="OnSearchText" KeyDown="OnSearchKeyDown" />
+                </Grid>
+
+                <StackPanel Grid.Column="2" Orientation="Horizontal" VerticalAlignment="Center">
+                    <TextBlock x:Name="Who" Style="{StaticResource Faint}" VerticalAlignment="Center" Margin="0,0,8,0" />
+                    <Button x:Name="SignOut" Style="{StaticResource Plain}" Click="OnSignOut" />
+                </StackPanel>
+            </Grid>
+        </Border>
+
+        <!-- Wat er in het midden staat hangt af van waar je bent: de drie
+             kolommen, of ÃƒÂ©ÃƒÂ©n boek over de hele breedte. Precies ÃƒÂ©ÃƒÂ©n staat er op
+             dat moment zichtbaar, en niet een stukje van allebei.
+
+             De drie kolommen staan altijd, en niet alleen als je aan het bladeren
+             bent. Dat is hoe de site het doet, en het is niet om de vorm: de
+             genres staan links en blijven daar staan, dus vanaf elke plek kun je
+             ergens anders gaan kijken. VÃƒÂ³ÃƒÂ³r was de thuispagina een eiland met
+             geen uitweg, en de enige manier om bij de genres te komen was eerst
+             een boek openen en dan terug Ã¢â‚¬â€ wat alleen werkte als er al een boek
+             open was. -->
+        <!-- Drie kolommen, en dit is de site tot op de pixel na:
+                 `main { display: grid; grid-template-columns: 230px 260px 1fr }`
+                 en de drie stukken in de volgorde van de HTML â€”
+                 `aside#genres`, `section#authors`, `section#books`.
+
+             Elke kolom is een eigen schuifbare lijst met een eigen rand aan de
+             rechterkant, behalve de laatste: `main` geeft ze allemaal
+             `overflow-y: auto` en een rand, en alleen `#books` krijgt
+             `border-right: none`.
+
+             En de kop boven elke kolom staat buiten de schuifbare lijst, want op
+             de site staat hij `position: sticky; top: 0` met een glazige achtergrond
+             erachter â€” hij blijft dus staan terwijl je naar beneden scrolt. Hier is
+             hij een vaste rij, wat op hetzelfde neerkomt. -->
+        <Grid Grid.Row="1">
+            <!-- Drie kolommen, en dit is de site tot op de pixel na:
+                 `main { display: grid; grid-template-columns: 230px 260px 1fr }`
+                 en de drie stukken in de volgorde van de HTML â€”
+                 `aside#genres`, `section#authors`, `section#books`.
+
+                 Ze staan in een eigen raster, en de boekpagina staat er los naast.
+                 Dat is niet om de vorm: als de boekpagina in hetzelfde raster zou
+                 liggen, tekent ze over de planken heen â€” en omdat ze zelf geen
+                 achtergrond heeft, schemeren die er dwars doorheen. EÃ©n keer was
+                 dat zo, en het scherm was onleesbaar. EÃ©n van twee staat zichtbaar,
+                 nooit allebei.
+
+                 Elke kolom is een eigen schuifbare lijst met een eigen rand aan de
+                 rechterkant, behalve de laatste: `main` geeft ze allemaal
+                 `overflow-y: auto` en een rand, en alleen `#books` krijgt
+                 `border-right: none`. -->
+            <Grid x:Name="Columns">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="230" MinWidth="200" />
+                    <ColumnDefinition Width="260" MinWidth="200" />
+                    <ColumnDefinition Width="*" MinWidth="280" />
+                </Grid.ColumnDefinitions>
+
+                    <!-- aside#genres -->
+                    <Border BorderBrush="{StaticResource Line}" BorderThickness="0,0,1,0">
+                        <Grid>
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="Auto" />
+                            <RowDefinition Height="*" />
+                        </Grid.RowDefinitions>
+                        <!-- `.col-title` heeft een eigen achtergrond:
+                             `rgba(14, 16, 20, .82)` met een blur erachter. Die
+                             blur is er omdat de lijst eronderdoor schuift en het
+                             glas de tekst erachter laat doorschijnen. Hier
+                             schuift er niets onderdoor, want de kop is een eigen
+                             rij boven de schuiflijst, en dat is hetzelfde wat de
+                             site ziet. Dus: alleen de eigen kleur, want dat is
+                             wat overblijft als er niets meer schuift. Zonder die
+                             kleur schijnt de gloed van de pagina dwars door de
+                             kop heen, en dat doet de site niet. -->
+                        <Border Background="#D90E1014">
+                            <TextBlock x:Name="LeftHead" Style="{StaticResource ColTitle}"
+                                       Margin="16,12,16,8" />
+                        </Border>
+                        <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto">
+                            <StackPanel x:Name="LeftStack" Margin="0,0,0,24" />
+                        </ScrollViewer>
+                    </Grid>
+                </Border>
+
+                <!-- section#authors -->
+                <Border Grid.Column="1" BorderBrush="{StaticResource Line}" BorderThickness="0,0,1,0">
+                    <Grid>
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="Auto" />
+                            <RowDefinition Height="*" />
+                        </Grid.RowDefinitions>
+                        <!-- Zelfde eigen kleur als de kop hiernaast; zie daar waarom. -->
+                        <Border Background="#D90E1014">
+                            <TextBlock x:Name="MiddleHead" Style="{StaticResource ColTitle}"
+                                       Margin="16,12,16,8" />
+                        </Border>
+                        <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto">
+                            <StackPanel x:Name="MiddleStack" Margin="0,0,0,24" />
+                        </ScrollViewer>
+                    </Grid>
+                </Border>
+
+                <!-- section#books -->
+                <Grid Grid.Column="2">
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto" />
+                        <RowDefinition Height="*" />
+                    </Grid.RowDefinitions>
+
+                    <!-- `.col-title` met de terugknop en de Home-knop erin, zoals op
+                         de site. De smalle knoppen van de site (`‹ Genres`,
+                         `‹ Back`, `Books ›`) zijn er voor het geval dat er maar één
+                         kolom past; hier passen ze altijd alle drie, en ze zouden dus
+                         nergens heen wijzen.
+
+                         De eigen kleur van de kop zit om het raster heen, want het
+                         raster heeft de marge van de kop (`16,12,16,8`) en een
+                         achtergrond op het raster zelf zou alleen tussen de
+                         woorden staan in plaats van over de hele breedte. -->
+                    <Border Background="#D90E1014">
+                        <Grid Margin="16,12,16,8">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="Auto" />
+                                <ColumnDefinition Width="*" />
+                                <ColumnDefinition Width="Auto" />
+                            </Grid.ColumnDefinitions>
+                            <StackPanel x:Name="PaneHead" Orientation="Horizontal" Grid.Column="1" />
+                            <Button x:Name="PaneHome" Grid.Column="2" Style="{StaticResource Link}"
+                                    Content="Home" Click="OnBrand" Visibility="Collapsed" />
+                        </Grid>
+                    </Border>
+
+                    <ScrollViewer x:Name="HomeScroll" Grid.Row="1" VerticalScrollBarVisibility="Auto"
+                                  Visibility="Collapsed">
+                        <StackPanel x:Name="HomeStack" Margin="16,0,0,24" />
+                    </ScrollViewer>
+
+                    <ScrollViewer x:Name="ListScroll" Grid.Row="1" VerticalScrollBarVisibility="Auto"
+                                  Visibility="Collapsed">
+                        <WrapPanel x:Name="RightWrap" Margin="16,0,16,24" />
+                    </ScrollViewer>
+                </Grid>
+
+            </Grid>
+
+            <!-- Eén keer stond deze bladzijde ín het raster van de kolommen, en
+                 toen tekende ze over de planken heen: ze heeft zelf geen
+                 achtergrond, dus de genres schemerden er dwars doorheen. Eén van
+                 twee staat nu zichtbaar, nooit allebei, en voor de zekerheid heeft
+                 deze bladzijde toch een eigen achtergrond. -->
+            <ScrollViewer x:Name="BookScroll" VerticalScrollBarVisibility="Auto"
+                          Visibility="Collapsed" Background="{StaticResource Bg}">
+                <Grid x:Name="BookGrid" Margin="30,26,30,26" />
+            </ScrollViewer>
+        </Grid>
+
+        <!-- De tellingen, onderaan en boven de speler, en niet bovenin de
+             pagina. Zo staan ze er ook op de site, en ze horen bij de speler en
+             niet bij de planken: het zijn geen boeken maar de collectie, en ze
+             veranderen niet als je van blad wisselt. -->
+        <Border Grid.Row="2" Background="#101318" BorderBrush="{StaticResource Line}" BorderThickness="0,1,0,0">
+            <StackPanel x:Name="StatusStack" Orientation="Horizontal" Margin="16,6,16,6" />
+        </Border>
+
+        <!-- De speler. Vast aan de onderkant, altijd op dezelfde hoogte, en leeg
+             als er niets speelt: een balk vol streepjes waar je op hebt
+             geklikt en waar niets in zit, is een balk die uitlegt waarom er
+             niets gebeurt. -->
+        <Border Grid.Row="3" Background="{StaticResource Panel}" BorderBrush="{StaticResource Line}"
+                BorderThickness="0,1,0,0">
+            <Grid x:Name="Bar" Margin="16,10,16,10" />
+        </Border>
+
+        <!-- De poort. Over alles heen, en het scherm eronder is niet te
+             bedienen: je moet je eerst aanmelden, en alles eronder zou
+             suggereren dat er al iets te zien was. -->
+        <!-- `RowSpan="4"` is hier niet cosmetiek. Zonder hem valt deze poort in
+             rij nul, en dat is de rij van de kopbalk: 48 pixels hoog. Hij dekte
+             dan alleen de kopbalk, de kaart hing eronder uit, en de pagina met
+             alle genres, favorieten en omslagen van de vorige persoon bleef
+             gewoon staan. Dat is geen erg app-uiterlijk maar een lek: na
+             afmelden hoort er niets van die persoon meer op het scherm.
+
+             Op de site is het een laag over het hele venster
+             (`position: fixed; inset: 0`) en laadt de pagina zichzelf opnieuw
+             na afmelden, dus daar is er ook niets meer om te zien. -->
+        <Grid x:Name="Gate" Grid.Row="0" Grid.RowSpan="4" Visibility="Collapsed" Background="#E608090C">
+            <Border Background="{StaticResource Panel}" BorderBrush="{StaticResource Line}" BorderThickness="1"
+                    CornerRadius="14" Padding="30,26" MaxWidth="460" VerticalAlignment="Center" HorizontalAlignment="Center">
+                <StackPanel>
+                    <TextBlock x:Name="GateTitle" Style="{StaticResource Heading}" HorizontalAlignment="Center" />
+                    <TextBlock x:Name="GateHint" Style="{StaticResource Dim}" Margin="0,10,0,18"
+                               TextAlignment="Center" />
+                    <TextBlock x:Name="GateWhere" Style="{StaticResource Faint}" Margin="0,0,0,6" />
+                    <TextBox x:Name="GateName" Style="{StaticResource Field}" Margin="0,0,0,8" />
+                    <!-- `Secret`, niet `Field`: een stijl met TargetType TextBox
+                         mag alleen op een TextBlock-achtig element, en WPF gooit
+                         anders een InvalidOperationException bij het opstarten.
+                         `Secret` is dezelfde veldstijl, alleen voor een
+                         PasswordBox. -->
+                    <PasswordBox x:Name="GatePass" Style="{StaticResource Secret}" Margin="0,0,0,12"
+                                 KeyDown="OnGateKeyDown" />
+                    <TextBlock x:Name="GateError" Style="{StaticResource Text}" Foreground="{StaticResource Red}"
+                               Margin="0,0,0,10" Visibility="Collapsed" />
+                    <Button x:Name="GateGo" Style="{StaticResource Primary}" HorizontalAlignment="Stretch"
+                            Content="Aanmelden" Click="OnSignIn" />
+
+                    <Separator Margin="0,18,0,14" Background="{StaticResource Line}" />
+                    <Button x:Name="GateOther" Style="{StaticResource Plain}" HorizontalAlignment="Left"
+                            Click="OnOtherAddress" />
+                    <StackPanel x:Name="GateAddressBox" Margin="0,10,0,0" Visibility="Collapsed">
+                        <TextBlock x:Name="GateAddressHint" Style="{StaticResource Faint}" Margin="0,0,0,6" />
+                        <TextBox x:Name="GateAddress" Style="{StaticResource Field}" Margin="0,0,0,10" />
+                        <Button x:Name="GateSave" Style="{StaticResource Plain}" HorizontalAlignment="Left"
+                                Click="OnSaveAddress" />
+                        <Button x:Name="GateBack" Style="{StaticResource Plain}" HorizontalAlignment="Left"
+                                Click="OnCloseAddress" Margin="10,0,0,0" />
+                    </StackPanel>
+                </StackPanel>
+            </Border>
+        </Grid>
+
+        <!-- Iets wat gezegd moet worden. Boven de speler, want de speler is het
+             dat de tekst betreft: "dit kon niet" hoort bij het geluid dat niet
+             komt. Op de site staat het op `position: fixed; bottom: 88px;
+             left: 50%`, en dat is hier letterlijk overgenomen: 88 pixels boven de
+             onderkant, en in het midden.
+
+             `RowSpan="4"` is daarom geen versiering. Zonder hem staat de melding
+             in rij 0, en `VerticalAlignment="Bottom"` betekent dan "de onderkant
+             van de kopbalk" — dus de melding ligt over de kop, boven het
+             zoekveld, waar je haar niet verwacht en waar ze de kop bedekt. -->
+        <Border x:Name="Toast" Grid.RowSpan="4" Visibility="Collapsed"
+                VerticalAlignment="Bottom" HorizontalAlignment="Center"
+                Margin="0,0,0,88" Padding="16,10" CornerRadius="10" MaxWidth="720"
+                Background="#1c2233" BorderBrush="{StaticResource Line}" BorderThickness="1"
+                IsHitTestVisible="False">
+            <TextBlock x:Name="ToastText" Style="{StaticResource Text}" TextAlignment="Center" />
+        </Border>
+    </Grid>
+</Window>

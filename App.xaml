@@ -1,0 +1,308 @@
+<Application x:Class="MyAudiobooks.App"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+    <Application.Resources>
+        <ResourceDictionary>
+
+            <!-- De kleuren, op één plek. Ze komen woordelijk uit style.css van de
+                 site die op deze collectie draait: het is dezelfde app, en wie van
+                 de een naar de andere gaat mag niet het idee krijgen in een ander
+                 programma te zijn beland. Buiten deze lijst staat in deze app
+                 geen enkele kleur, zodat het thema op één plek te veranderen is.
+
+                 Let op de twee gelen: `Accent` is het paars van de knoppen en
+                 van de rij die je hebt gekozen, en `Warm` is het geel van de
+                 voortgangsbalk. Ze zijn niet hetzelfde en dat is geen
+                 slordigheid: geel leest op een donkere tegel in één oogopslag,
+                 en het paars is de kleur van het programma. -->
+            <Color x:Key="BgColor">#0e1014</Color>
+            <Color x:Key="PanelColor">#16191f</Color>
+            <Color x:Key="Panel2Color">#1c2027</Color>
+            <Color x:Key="LineColor">#262b34</Color>
+            <Color x:Key="TextColor">#e6e8ec</Color>
+            <Color x:Key="DimColor">#a2a9b8</Color>
+            <Color x:Key="FaintColor">#6b7285</Color>
+            <Color x:Key="AccentColor">#7c5cff</Color>
+            <Color x:Key="Accent2Color">#22d3ee</Color>
+            <Color x:Key="WarmColor">#ffd452</Color>
+            <Color x:Key="GreenColor">#4ade80</Color>
+            <Color x:Key="RedColor">#f87171</Color>
+
+            <SolidColorBrush x:Key="Bg" Color="{StaticResource BgColor}" />
+            <SolidColorBrush x:Key="Panel" Color="{StaticResource PanelColor}" />
+            <SolidColorBrush x:Key="Panel2" Color="{StaticResource Panel2Color}" />
+            <SolidColorBrush x:Key="Line" Color="{StaticResource LineColor}" />
+            <SolidColorBrush x:Key="Ink" Color="{StaticResource TextColor}" />
+            <SolidColorBrush x:Key="InkDim" Color="{StaticResource DimColor}" />
+            <SolidColorBrush x:Key="InkFaint" Color="{StaticResource FaintColor}" />
+            <SolidColorBrush x:Key="Accent" Color="{StaticResource AccentColor}" />
+            <SolidColorBrush x:Key="Accent2" Color="{StaticResource Accent2Color}" />
+            <SolidColorBrush x:Key="Warm" Color="{StaticResource WarmColor}" />
+            <SolidColorBrush x:Key="Green" Color="{StaticResource GreenColor}" />
+            <SolidColorBrush x:Key="Red" Color="{StaticResource RedColor}" />
+
+            <!-- De twee gloedjes achter de pagina, in de kleuren van het programma.
+                 Zonder ze is een leeg paneel een vlak, en met ze is het een
+                 oppervlak waar licht op valt. Zelfde kleuren, 34% van de sterkte. -->
+            <RadialGradientBrush x:Key="Glow1" Center="0.04, 0.0" RadiusX="0.62" RadiusY="0.85">
+                <GradientStop Color="#5470ff" Offset="0" />
+                <GradientStop Color="#5470ff" Offset="0" />
+            </RadialGradientBrush>
+            <LinearGradientBrush x:Key="Bar" StartPoint="0,0" EndPoint="1,0">
+                <GradientStop Color="#171a21" Offset="0" />
+                <GradientStop Color="#12141a" Offset="1" />
+            </LinearGradientBrush>
+            <LinearGradientBrush x:Key="WarmRamp" StartPoint="0,0" EndPoint="1,0">
+                <GradientStop Color="#ffb628" Offset="0" />
+                <GradientStop Color="#ffe066" Offset="1" />
+            </LinearGradientBrush>
+            <LinearGradientBrush x:Key="DayRamp" StartPoint="0,0" EndPoint="1,0">
+                <GradientStop Color="{StaticResource AccentColor}" Offset="0" />
+                <GradientStop Color="{StaticResource Accent2Color}" Offset="1" />
+            </LinearGradientBrush>
+
+            <FontFamily x:Key="Font">Segoe UI</FontFamily>
+
+            <!-- Tekst. Eén stijl, en alles eronder gebruikt hem, want een app die
+                 op drie plekken een ander lettertype gebruikt leest als drie
+                 verschillende apps. -->
+            <Style x:Key="Text" TargetType="TextBlock">
+                <Setter Property="FontFamily" Value="{StaticResource Font}" />
+                <Setter Property="Foreground" Value="{StaticResource Ink}" />
+                <Setter Property="FontSize" Value="14" />
+                <Setter Property="TextWrapping" Value="Wrap" />
+                <Setter Property="TextOptions.TextFormattingMode" Value="Ideal" />
+            </Style>
+            <Style x:Key="Dim" TargetType="TextBlock" BasedOn="{StaticResource Text}">
+                <Setter Property="Foreground" Value="{StaticResource InkDim}" />
+            </Style>
+            <Style x:Key="Faint" TargetType="TextBlock" BasedOn="{StaticResource Text}">
+                <Setter Property="Foreground" Value="{StaticResource InkFaint}" />
+            </Style>
+            <Style x:Key="Heading" TargetType="TextBlock" BasedOn="{StaticResource Text}">
+                <Setter Property="FontSize" Value="20" />
+                <Setter Property="FontWeight" Value="SemiBold" />
+            </Style>
+            <Style x:Key="Section" TargetType="TextBlock" BasedOn="{StaticResource Text}">
+                <Setter Property="FontSize" Value="12" />
+                <Setter Property="FontWeight" Value="SemiBold" />
+                <Setter Property="Foreground" Value="{StaticResource InkFaint}" />
+            </Style>
+
+            <!-- De kop boven een kolom: klein,hoofdletters, en vaag. Zo staat hij
+                 ook op de site, en het is een kop en geen opschrift — hij zegt
+                 alleen welke kolom dit is, en moet niet de aandacht op zich
+                 houden. -->
+            <Style x:Key="ColTitle" TargetType="TextBlock" BasedOn="{StaticResource Text}">
+                <Setter Property="FontSize" Value="11" />
+                <Setter Property="Foreground" Value="{StaticResource InkDim}" />
+                <Setter Property="TextWrapping" Value="NoWrap" />
+            </Style>
+
+            <!-- De kop boven een plank: "Verder luisteren", "Recent toegevoegd".
+                 Die zijn niet vaag maar in het cyaan, want dit zijn de dingen
+                 waar je op de site naar toe komt. -->
+            <Style x:Key="ShelfTitle" TargetType="TextBlock" BasedOn="{StaticResource Text}">
+                <Setter Property="FontSize" Value="12" />
+                <Setter Property="Foreground" Value="{StaticResource Accent2}" />
+                <Setter Property="FontWeight" Value="Normal" />
+                <Setter Property="TextWrapping" Value="NoWrap" />
+            </Style>
+
+            <!-- Knoppen. Geen rand, geen achtergrond: alleen het woord en de
+                 kleur. Een app die van alles een knop maakt ziet eruit alsof
+                 alles klikbaar is. -->
+            <Style x:Key="Plain" TargetType="Button">
+                <Setter Property="FontFamily" Value="{StaticResource Font}" />
+                <Setter Property="FontSize" Value="14" />
+                <Setter Property="Foreground" Value="{StaticResource Ink}" />
+                <Setter Property="Background" Value="Transparent" />
+                <Setter Property="BorderThickness" Value="0" />
+                <Setter Property="Padding" Value="10,6" />
+                <Setter Property="Cursor" Value="Hand" />
+                <Setter Property="Template">
+                    <Setter.Value>
+                        <ControlTemplate TargetType="Button">
+                            <Border x:Name="b" Background="{TemplateBinding Background}" CornerRadius="8"
+                                    Padding="{TemplateBinding Padding}">
+                                <Grid>
+                                    <!-- Oplichten gaat met een sluier er bovenop en
+                                         niet met een andere kleur eronder: anders
+                                         verdwijnt de kleur van de rij die je hebt
+                                         gekozen, want die is geen doorzichtige
+                                         achtergrond maar een vlak. -->
+                                    <Border x:Name="h" Background="#ffffff" CornerRadius="8" Opacity="0" />
+                                    <!-- Uitgerekend volgens de knop, en niet vast op
+                                         `Center`. Een knop is normaal een middelpunt,
+                                         en `Center` is dan ook de standaard van WPF,
+                                         dus de meeste knoppen veranderen niet. Maar
+                                         een rij in een kolom wil wél de hele breedte:
+                                         de naam links, het aantal rechts, het
+                                         pijltje ervoor. Die zeggen
+                                         `HorizontalContentAlignment = Stretch` en
+                                         die werden genegeerd, waardoor de rij zich
+                                         naar de gewenste breedte plooide en
+                                         gecentreerd werd. Het gevolk was niet te
+                                         overzien: elke naam begon op een andere
+                                         plek, omdat het begin afhing van hoe lang
+                                         die ene naam was. -->
+                                    <ContentPresenter
+                                        HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}"
+                                        VerticalAlignment="{TemplateBinding VerticalContentAlignment}" />
+                                </Grid>
+                            </Border>
+                            <ControlTemplate.Triggers>
+                                <Trigger Property="IsMouseOver" Value="True">
+                                    <Setter TargetName="h" Property="Opacity" Value="0.08" />
+                                </Trigger>
+                                <Trigger Property="IsEnabled" Value="False">
+                                    <Setter TargetName="b" Property="Background" Value="Transparent" />
+                                    <Setter Property="Foreground" Value="{StaticResource InkFaint}" />
+                                </Trigger>
+                            </ControlTemplate.Triggers>
+                        </ControlTemplate>
+                    </Setter.Value>
+                </Setter>
+            </Style>
+
+            <!-- De knop die iets doet: paars, met wit op. Zo ziet hij er op de
+                 site uit, en de andere stijl hierboven is een woord in een zin
+                 en geen knop. Vóór heette deze stijl `Gold`, omdat toen het goud
+                 was; een stijl die paars is maar naar goud luistert, is een
+                 naam die misleidt, en dus een naam die verdwijnt. -->
+            <Style x:Key="Primary" TargetType="Button" BasedOn="{StaticResource Plain}">
+                <Setter Property="Foreground" Value="#ffffff" />
+                <Setter Property="Background" Value="{StaticResource Accent}" />
+                <Setter Property="FontWeight" Value="SemiBold" />
+                <Setter Property="Padding" Value="18,10" />
+                <Setter Property="Template">
+                    <Setter.Value>
+                        <ControlTemplate TargetType="Button">
+                            <Border x:Name="b" Background="{TemplateBinding Background}" CornerRadius="8"
+                                    Padding="{TemplateBinding Padding}">
+                                <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center" />
+                            </Border>
+                            <ControlTemplate.Triggers>
+                                <Trigger Property="IsMouseOver" Value="True">
+                                    <Setter TargetName="b" Property="Opacity" Value="0.86" />
+                                </Trigger>
+                                <Trigger Property="IsEnabled" Value="False">
+                                    <Setter TargetName="b" Property="Background" Value="{StaticResource Panel2}" />
+                                    <Setter Property="Foreground" Value="{StaticResource InkFaint}" />
+                                </Trigger>
+                            </ControlTemplate.Triggers>
+                        </ControlTemplate>
+                    </Setter.Value>
+                </Setter>
+            </Style>
+
+            <!-- Een woord in een zin dat je kunt klikken: cyaan en onderstreept.
+                 De site doet dat, en het scheidt "dit is een knop" van "dit is
+                 een link" beter dan een rand of een kleur alleen. -->
+            <Style x:Key="Link" TargetType="Button" BasedOn="{StaticResource Plain}">
+                <Setter Property="Foreground" Value="{StaticResource Accent2}" />
+                <Setter Property="Padding" Value="6,2" />
+            </Style>
+
+            <!-- Tekenvelden. Donker, met een rand die oplicht als je erin typt:
+                 zonder dat is het onmogelijk te zien dat je ergens bent. -->
+            <Style x:Key="Field" TargetType="TextBox">
+                <Setter Property="FontFamily" Value="{StaticResource Font}" />
+                <Setter Property="FontSize" Value="14" />
+                <Setter Property="Foreground" Value="{StaticResource Ink}" />
+                <Setter Property="Background" Value="{StaticResource Panel2}" />
+                <Setter Property="BorderBrush" Value="{StaticResource Line}" />
+                <Setter Property="BorderThickness" Value="1" />
+                <Setter Property="Padding" Value="10,7" />
+                <Setter Property="CaretBrush" Value="{StaticResource Accent2}" />
+                <Setter Property="SelectionBrush" Value="{StaticResource Accent2}" />
+                <Setter Property="SelectionOpacity" Value="0.35" />
+            </Style>
+            <Style x:Key="Secret" TargetType="PasswordBox">
+                <Setter Property="FontFamily" Value="{StaticResource Font}" />
+                <Setter Property="FontSize" Value="14" />
+                <Setter Property="Foreground" Value="{StaticResource Ink}" />
+                <Setter Property="Background" Value="{StaticResource Panel2}" />
+                <Setter Property="BorderBrush" Value="{StaticResource Line}" />
+                <Setter Property="BorderThickness" Value="1" />
+                <Setter Property="Padding" Value="10,7" />
+                <Setter Property="CaretBrush" Value="{StaticResource Accent2}" />
+            </Style>
+
+            <!-- Lijsten. De randen en de blauwe aankleuring van Windows horen niet
+                 bij dit programma; zonder deze stijl springt elke lijst eruit als
+                 iemand anders' programma dat er per ongeluk in zit. -->
+            <Style x:Key="List" TargetType="ListBox">
+                <Setter Property="Background" Value="Transparent" />
+                <Setter Property="BorderThickness" Value="0" />
+                <Setter Property="Foreground" Value="{StaticResource Ink}" />
+                <Setter Property="FontFamily" Value="{StaticResource Font}" />
+                <Setter Property="FontSize" Value="14" />
+                <Setter Property="ScrollViewer.HorizontalScrollBarVisibility" Value="Disabled" />
+                <Setter Property="VirtualizingStackPanel.IsVirtualizing" Value="True" />
+                <Setter Property="VirtualizingStackPanel.VirtualizationMode" Value="Recycling" />
+            </Style>
+
+            <!-- De schuifbalk. Standaard is hij licht en breed en hij trekt meteen
+                 de aandacht; hier is hij smal en donker, en hij verdwijnt als je
+                 niet langs de kant sleept. -->
+            <Style TargetType="ScrollBar">
+                <Setter Property="Background" Value="Transparent" />
+                <Setter Property="Width" Value="10" />
+                <Setter Property="Template">
+                    <Setter.Value>
+                        <ControlTemplate TargetType="ScrollBar">
+                            <Grid Background="Transparent">
+                                <Track x:Name="PART_Track" IsDirectionReversed="True">
+                                    <Track.Thumb>
+                                        <Thumb>
+                                            <Thumb.Template>
+                                                <ControlTemplate TargetType="Thumb">
+                                                    <Border Background="#39404e" CornerRadius="5" Margin="2" />
+                                                </ControlTemplate>
+                                            </Thumb.Template>
+                                        </Thumb>
+                                    </Track.Thumb>
+                                    <Track.IncreaseRepeatButton>
+                                        <RepeatButton Command="ScrollBar.PageDownCommand" Opacity="0" />
+                                    </Track.IncreaseRepeatButton>
+                                    <Track.DecreaseRepeatButton>
+                                        <RepeatButton Command="ScrollBar.PageUpCommand" Opacity="0" />
+                                    </Track.DecreaseRepeatButton>
+                                </Track>
+                            </Grid>
+                        </ControlTemplate>
+                    </Setter.Value>
+                </Setter>
+            </Style>
+
+            <Style TargetType="ProgressBar">
+                <Setter Property="Background" Value="#2c3342" />
+                <Setter Property="Foreground" Value="{StaticResource Warm}" />
+                <Setter Property="BorderThickness" Value="0" />
+                <Setter Property="Height" Value="5" />
+                <Setter Property="Template">
+                    <Setter.Value>
+                        <ControlTemplate TargetType="ProgressBar">
+                            <Border Background="{TemplateBinding Background}" CornerRadius="999" ClipToBounds="True">
+                                <Grid>
+                                    <Rectangle x:Name="PART_Track" />
+                                    <Border x:Name="PART_Indicator" HorizontalAlignment="Left"
+                                            Background="{StaticResource WarmRamp}" CornerRadius="999" />
+                                </Grid>
+                            </Border>
+                        </ControlTemplate>
+                    </Setter.Value>
+                </Setter>
+            </Style>
+
+            <!-- De rand rond het venster zelf is 1px lichter dan de achtergrond,
+                 zodat het venster tegen de taakbalk zichtbaar is. Zonder dat
+                 lijkt een donker venster op een donkere taakbalk op een gat. -->
+            <Style TargetType="Window">
+                <Setter Property="Background" Value="{StaticResource Bg}" />
+            </Style>
+
+        </ResourceDictionary>
+    </Application.Resources>
+</Application>

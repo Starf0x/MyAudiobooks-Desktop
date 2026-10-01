@@ -1,0 +1,28 @@
+# Bouwuitvoer. Dat staat niet in de repo omdat het niet de bron is, en omdat
+# `uit\MyAudiobooks.exe` 70 MB is: dat is een bestand dat je bouwt, niet een
+# bestand dat je bewaart.
+bin/
+obj/
+uit/
+
+# De app op schijf. Niets hiervan hoort in een repo: het is de sessie van
+# iemand, en `cookie.bin` is versleuteld met een sleutel van deze
+# Windows-gebruiker, dus het is nutteloos voor een ander en gevaarlijk voor jou.
+state.json
+state.backup.json
+cookie.bin
+verzoeken.log
+fouten.log
+
+# Van de proefserver. `proefserver-aanzetten.ps1` maakt dit bestand leeg bij elke
+# start, dus het is de uitvoer van de laatste proef en niet iets om te bewaren.
+proefjes/requests.log
+
+# Node_modules van de proefserver. Zie `fixtures\package.json`.
+node_modules/
+
+# Tijdelijk spoorwerk.
+*.tmp
+*.bak
+*.user
+.vs/
