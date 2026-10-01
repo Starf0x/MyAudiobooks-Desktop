@@ -18,12 +18,25 @@ Ze kijken op drie manieren:
 
 ## Draaien
 
+De proefserver heeft Node en `express` nodig, en die komen uit de map hierboven:
+
 ```powershell
+npm install          # een keer, vanuit de map van het project
+```
+
+Daarna:
+
+```powershell
+cd proefjes
 .\alle.ps1                              # alles, en een oordeel per proefje
 .\alle.ps1 -Alleen hervatten            # één proefje, of er een paar
 .\voortgang-van-server.ps1               # één proefje, los
 .\proef-bewijst-zichzelf.ps1             # kijkt of dat proefje iets meet
 ```
+
+De app zelf moet gebouwd zijn, want de proefjes draaien `uit\MyAudiobooks.exe`.
+Bouwen staat in de README; `een-proces.ps1` zegt het hardop als dat bestand er
+niet staat, in plaats van het te overslaan.
 
 `proef-bewijst-zichzelf.ps1` is geen proefje maar gereedschap, en hij is
 destructief: hij zet de tweede voortgang-boekhouding terug in de app om te zien of
@@ -133,6 +146,38 @@ Wil je de app met de echte server proberen, start hem dan zelf zonder `MABC_URL`
 de app meet, maar over een proefje: kijkt of `voortgang-van-server.ps1` een
 MISLUKT geeft wanneer de tweede voortgang-boekhouding weer in de app staat. Zie
 "Voortgang komt van de server" hieronder.
+
+### De proefserver
+
+`fixtures/app-probe.mjs` is de server waar de proefjes tegen draaien. Hij is
+gewoon de collectie-server op een stukje na: dezelfde routes, maar met een
+aantal schakelaars om dingen kapot te zetten die een echte server niet kapot
+doet — geen `/api/mp3`, geen `/api/favourites`, geen geluid, of een boek dat
+nog omgezet moet worden.
+
+Hij stond eerst in de Electron-map (`MyAudiobooks\fixtures`) en stond daar in
+`.gitignore`. Dat maakte de proefjes afhankelijk van een map die niet in deze
+repo zit: na een klon draaide er geen enkel proefje meer, en de suite die in
+`LEES-MIJ.md` en op de README staat zou dan alleen nog de indruk geven dat er
+iets te testen viel. Hij staat nu hier, met een eigen `package.json` die alleen
+`express` nodig heeft. `package-lock.json` ligt vast, want een proefserver die
+zonder het te zeggen van versie wisselt is hetzelfde probleem als een schakelaar
+die blijft hangen.
+
+De schakelaars, en wat ze meten:
+
+| schakelaar | effect |
+|---|---|
+| `APP_PROBE_MP3=1` | `/api/mp3/<spoor>` bestaat, met voortgang (409) en de gerenderde mp3 |
+| `APP_PROBE_NO_FAVS=1` | `/api/favourites` bestaat niet: een 404 met HTML |
+| `APP_PROBE_NO_STREAM=1` | `/api/stream/<spoor>` bestaat ook niet: geen enkele geluidsroute werkt |
+| `APP_PROBE_KEEP=1` | de opgebouwde boeken bewaren in plaats van opruimen bij het afsluiten |
+| `APP_PROBE_PORT` | de poort, standaard 8532 |
+| `APP_PROBE_LOG` | waar het verzoekenlog komt, standaard een temp-map |
+
+Ze beginnen allemaal uit: `proefserver-aanzetten.ps1` zet ze uit voor hij de
+server start. Dat is geen gewoonte maar een les, en hij staat in de lijst van
+proefjes die hebben gelogen verderop.
 
 ## Wachten op een melding, in plaats van een tijd slapen
 
